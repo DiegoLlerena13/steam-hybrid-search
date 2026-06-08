@@ -1,0 +1,84 @@
+# =========================
+# PYTHON
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Archivos de entorno
+.env
+.env.*
+
+# Jupyter / Kaggle
+.ipynb_checkpoints/
+
+# Modelos IA
+models/
+embeddings/
+vector_data/
+
+# Logs
+*.log
+
+# =========================
+# FASTAPI
+# =========================
+*.sqlite3
+
+# =========================
+# POSTGRESQL
+# =========================
+*.sql
+postgres_data/
+
+# =========================
+# NODE / REACT
+# =========================
+node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build React
+build/
+dist/
+
+# =========================
+# VS CODE
+# =========================
+.vscode/
+
+# =========================
+# SISTEMA
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# DATASETS GRANDES
+# =========================
+*.csv
+*.parquet
+*.h5
+
+# Steam Dataset
+games_march2025_cleaned.csv
+
+# =========================
+# EMBEDDINGS GENERADOS
+# =========================
+embeddings.npy
+embeddings.pkl
+faiss_index.bin
+
+# =========================
+# TESTS
+# =========================
+.pytest_cache/
+coverage/
