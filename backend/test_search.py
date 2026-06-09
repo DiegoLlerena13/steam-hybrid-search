@@ -5,7 +5,6 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 df = pd.read_csv("../dataset/games_processed.csv")
-df = df.head(500)
 
 embeddings = np.load(
     "../dataset/embeddings.npy"

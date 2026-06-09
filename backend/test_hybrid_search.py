@@ -7,7 +7,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 # cargar dataset
 
 df = pd.read_csv("../dataset/games_processed.csv")
-df = df.head(500)
 # cargar embeddings
 
 embeddings = np.load("../dataset/embeddings.npy")

@@ -1,12 +1,7 @@
 import pandas as pd
 
 from sqlalchemy import text
-from sentence_transformers import SentenceTransformer
-
-model = SentenceTransformer(
-    "BAAI/bge-base-en-v1.5"
-)
-
+from app.model import model
 def semantic_search(
     query,
     conn

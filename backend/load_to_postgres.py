@@ -16,16 +16,15 @@ conn = psycopg2.connect(
 cursor = conn.cursor()
 
 # -------------------------
-# Cargar dataset
+# Dataset
 # -------------------------
 
 df = pd.read_csv(
     "../dataset/games_processed.csv"
 )
 
-df = df.head(500)
 # -------------------------
-# Cargar embeddings
+# Embeddings
 # -------------------------
 
 embeddings = np.load(
@@ -36,7 +35,7 @@ print("Juegos:", len(df))
 print("Embeddings:", len(embeddings))
 
 # -------------------------
-# Insertar registros
+# Insertar
 # -------------------------
 
 for i, row in df.iterrows():
@@ -50,16 +49,32 @@ for i, row in df.iterrows():
             name,
             price,
             release_date,
+
+            genres,
+            tags,
+
+            developers,
+            publishers,
+
+            positive,
+            negative,
+
+            pct_pos_total,
+            num_reviews_total,
+
+            average_playtime_forever,
+
             semantic_text,
             embedding
         )
         VALUES (
+            %s,%s,%s,%s,
+            %s,%s,
+            %s,%s,
+            %s,%s,
+            %s,%s,
             %s,
-            %s,
-            %s,
-            %s,
-            %s,
-            %s
+            %s,%s
         )
         """,
         (
@@ -67,17 +82,28 @@ for i, row in df.iterrows():
             row["name"],
             float(row["price"]),
             row["release_date"],
+
+            str(row["genres"]),
+            str(row["tags"]),
+
+            str(row["developers"]),
+            str(row["publishers"]),
+
+            int(row["positive"]) if pd.notna(row["positive"]) else 0,
+            int(row["negative"]) if pd.notna(row["negative"]) else 0,
+
+            float(row["pct_pos_total"]) if pd.notna(row["pct_pos_total"]) else 0,
+            int(row["num_reviews_total"]) if pd.notna(row["num_reviews_total"]) else 0,
+
+            float(row["average_playtime_forever"]) if pd.notna(row["average_playtime_forever"]) else 0,
+
             row["semantic_text"],
             embedding
         )
     )
 
-    if i % 100 == 0:
+    if i % 1000 == 0:
         print(f"Insertados {i}")
-
-# -------------------------
-# Guardar cambios
-# -------------------------
 
 conn.commit()
 

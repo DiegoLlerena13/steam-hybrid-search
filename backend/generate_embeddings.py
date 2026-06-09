@@ -7,9 +7,6 @@ print("Cargando dataset...")
 
 df = pd.read_csv("../dataset/games_processed.csv")
 
-# SOLO PARA PRUEBAS
-df = df.head(500)
-
 print("Cantidad de juegos:", len(df))
 
 print("Cargando modelo...")
