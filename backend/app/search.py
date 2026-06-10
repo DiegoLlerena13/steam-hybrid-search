@@ -19,7 +19,7 @@ def semantic_search(
             ) AS similarity
         FROM games
         ORDER BY embedding <=> CAST(:embedding AS vector)
-        LIMIT 10
+        LIMIT 50
     """)
 
     result = pd.read_sql(
