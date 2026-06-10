@@ -1,87 +1,143 @@
 import requests
 
-queries = {
-    "zombie survival multiplayer": [
-        "Project Zomboid",
-        "DayZ",
-        "Unturned",
-        "7 Days to Die",
-        "State of Decay 2: Juggernaut Edition"
-    ],
+BASE_URL = "http://127.0.0.1:8000"
 
-    "pixel art adventure": [
-        "Terraria",
-        "Stardew Valley",
-        "Undertale",
-        "Core Keeper",
-        "OneShot"
-    ],
+TESTS = [
+    {
+        "query": "zombie survival multiplayer",
+        "relevant": [
+            "Project Zomboid",
+            "DayZ",
+            "7 Days to Die",
+            "Unturned",
+            "Dying Light"
+        ]
+    },
+    {
+        "query": "souls-like dark fantasy action rpg",
+        "relevant": [
+            "ELDEN RING",
+            "DARK SOULS™ III",
+            "DARK SOULS™: REMASTERED",
+            "Sekiro™: Shadows Die Twice - GOTY Edition",
+            "Lords of the Fallen"
+        ]
+    },
+    {
+        "query": "pixel art adventure",
+        "relevant": [
+            "Terraria",
+            "Stardew Valley",
+            "Undertale",
+            "Hollow Knight",
+            "Dead Cells"
+        ]
+    },
+    {
+        "query": "medieval fantasy rpg",
+        "relevant": [
+            "The Witcher 3: Wild Hunt",
+            "Baldur's Gate 3",
+            "Divinity: Original Sin 2 - Definitive Edition",
+            "ELDEN RING",
+            "Dragon's Dogma 2"
+        ]
+    }
+]
 
-    "medieval fantasy rpg": [
-        "Baldur's Gate 3",
-        "The Witcher 3: Wild Hunt",
-        "Kingdom Come: Deliverance",
-        "Dragon's Dogma 2",
-        "Divinity: Original Sin 2 - Definitive Edition"
-    ],
 
-    "souls like": [
-        "ELDEN RING",
-        "Lords of the Fallen",
-        "Dark Souls",
-        "Lies of P",
-        "Black Myth: Wukong"
-    ]
-}
-
-total_recall = 0
-
-for query, relevant_games in queries.items():
-
+def search(endpoint, query):
     response = requests.get(
-        "http://127.0.0.1:8000/search",
+        f"{BASE_URL}/{endpoint}",
         params={
-            "query": query
+            "query": query,
+            "min_reviews": 1000
         }
     )
 
-    results = response.json()
+    if response.status_code != 200:
+        print("Error:", response.status_code, response.text)
+        return []
 
-    found_games = [
-        game["name"]
-        for game in results
+    return response.json()
+
+
+def recall_at_k(results, relevant, k=10):
+    top_k = results[:k]
+
+    found_names = [
+        item["name"].lower()
+        for item in top_k
     ]
 
     hits = 0
 
-    for game in relevant_games:
+    for rel in relevant:
+        rel_lower = rel.lower()
 
-        if any(
-            game.lower() in result.lower()
-            for result in found_games
-        ):
+        if any(rel_lower in name or name in rel_lower for name in found_names):
             hits += 1
 
-    recall = hits / len(relevant_games)
+    return hits / len(relevant), hits
 
-    total_recall += recall
 
-    print("\n" + "="*50)
-    print("Consulta:", query)
+def main():
+    total_vector_recall = 0
+    total_hybrid_recall = 0
 
-    print("\nEncontrados:")
+    print("\nEVALUACION RECALL@10")
+    print("=" * 60)
 
-    for game in found_games:
-        print("-", game)
+    for test in TESTS:
+        query = test["query"]
+        relevant = test["relevant"]
 
-    print("\nHits:", hits)
-    print("Recall:", round(recall, 2))
+        vector_results = search(
+            "search",
+            query
+        )
 
-average_recall = (
-    total_recall /
-    len(queries)
-)
+        hybrid_results = search(
+            "hybrid-search",
+            query
+        )
 
-print("\n" + "="*50)
-print("RECALL PROMEDIO")
-print(round(average_recall, 2))
+        vector_recall, vector_hits = recall_at_k(
+            vector_results,
+            relevant
+        )
+
+        hybrid_recall, hybrid_hits = recall_at_k(
+            hybrid_results,
+            relevant
+        )
+
+        total_vector_recall += vector_recall
+        total_hybrid_recall += hybrid_recall
+
+        print("\nConsulta:", query)
+        print("Relevantes:", relevant)
+
+        print("\nVectorial Top 10:")
+        for item in vector_results[:10]:
+            print("-", item["name"])
+
+        print("Recall Vectorial@10:", round(vector_recall, 2), f"({vector_hits}/{len(relevant)})")
+
+        print("\nHibrida Top 10:")
+        for item in hybrid_results[:10]:
+            print("-", item["name"])
+
+        print("Recall Hibrida@10:", round(hybrid_recall, 2), f"({hybrid_hits}/{len(relevant)})")
+
+    avg_vector = total_vector_recall / len(TESTS)
+    avg_hybrid = total_hybrid_recall / len(TESTS)
+
+    print("\n" + "=" * 60)
+    print("PROMEDIO")
+    print("Recall Vectorial@10:", round(avg_vector, 2))
+    print("Recall Hibrida@10:", round(avg_hybrid, 2))
+
+
+if __name__ == "__main__":
+    main()
