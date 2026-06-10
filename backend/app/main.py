@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine
 from app.search import semantic_search
 from app.routes.hybrid import router as hybrid_router
+from app.routes.natural import router as natural_router
 
 app = FastAPI()
 
@@ -19,6 +20,7 @@ app.add_middleware(
 )
 
 app.include_router(hybrid_router)
+app.include_router(natural_router)
 
 @app.get("/")
 def home():
