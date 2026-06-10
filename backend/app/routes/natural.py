@@ -31,9 +31,6 @@ def detect_year(text: str):
 
     year = year_match.group(1)
 
-    if "antes" in text:
-        return "2000-01-01"
-
     return f"{year}-01-01"
 
 
@@ -77,7 +74,9 @@ def detect_query(text: str):
         "left 4 dead": "zombie survival cooperative multiplayer shooter",
         "hollow knight": "metroidvania dark fantasy platformer action adventure",
         "the witcher": "open world fantasy rpg story rich",
-        "zelda": "open world fantasy adventure exploration"
+        "zelda": "open world fantasy adventure exploration",
+        "zombies": "zombie survival cooperative multiplayer shooter",
+        "zombie": "zombie survival cooperative multiplayer shooter"
     }
 
     for key, value in replacements.items():
@@ -87,33 +86,11 @@ def detect_query(text: str):
     clean_text = text_lower
 
     words_to_remove = [
-        "juegos",
-        "juego",
-        "similares",
-        "similar",
-        "parecidos",
-        "parecido",
-        "como",
-        "que",
-        "cuesten",
-        "cueste",
-        "menos",
-        "mas",
-        "más",
-        "de",
-        "del",
-        "despues",
-        "después",
-        "antes",
-        "populares",
-        "popular",
-        "bien",
-        "valorados",
-        "valorado",
-        "soles",
-        "dolares",
-        "dólares",
-        "usd"
+        "juegos", "juego", "similares", "similar", "parecidos", "parecido",
+        "como", "que", "cuesten", "cueste", "menos", "mas", "más",
+        "de", "del", "despues", "después", "antes", "populares",
+        "popular", "bien", "valorados", "valorado", "soles",
+        "dolares", "dólares", "usd", "a", "y", "con"
     ]
 
     for word in words_to_remove:
@@ -130,7 +107,6 @@ def detect_query(text: str):
 
 @router.get("/natural-search")
 def natural_search(prompt: str):
-
     interpreted_query = detect_query(prompt)
     max_price = detect_price(prompt)
     min_date = detect_year(prompt)
@@ -145,14 +121,29 @@ def natural_search(prompt: str):
         min_rating=min_rating
     )
 
+    semantic_tags = interpreted_query.split()
+
     return {
         "original_prompt": prompt,
         "interpreted_query": interpreted_query,
+        "extracted_tags": semantic_tags,
         "filters": {
             "max_price_usd": max_price,
             "min_date": min_date,
             "min_reviews": min_reviews,
             "min_rating": min_rating
+        },
+        "transparency": {
+            "semantic_tags": semantic_tags,
+            "recognized_filters": {
+                "price": f"price <= {max_price}",
+                "release_date": f"release_date >= {min_date}",
+                "reviews": f"num_reviews_total >= {min_reviews}",
+                "rating": f"pct_pos_total >= {min_rating}"
+            },
+            "vector_part": "La consulta interpretada se transforma en un embedding. Luego pgvector compara ese vector con los embeddings de cada videojuego.",
+            "sql_part": "SQL filtra los videojuegos por precio, fecha, cantidad de reviews y rating positivo.",
+            "ranking_formula": "final_score = 0.75 * similarity + 0.20 * popularity + 0.05 * rating"
         },
         "results": results
     }

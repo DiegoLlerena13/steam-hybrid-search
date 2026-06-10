@@ -1,10 +1,65 @@
 from fastapi import APIRouter
 from sqlalchemy import text
+import ast
+import re
 
 from app.database import engine
 from app.model import model
 
 router = APIRouter()
+
+
+def clean_tags(tags_text):
+    try:
+        tags_dict = ast.literal_eval(tags_text)
+
+        if isinstance(tags_dict, dict):
+            return list(tags_dict.keys())[:10]
+
+        if isinstance(tags_dict, list):
+            return tags_dict[:10]
+
+    except Exception:
+        return []
+
+    return []
+
+
+def clean_genres(genres_text):
+    try:
+        genres_list = ast.literal_eval(genres_text)
+
+        if isinstance(genres_list, list):
+            return genres_list
+
+    except Exception:
+        return []
+
+    return []
+
+
+def clean_description(text):
+    if not text:
+        return ""
+
+    text = str(text)
+
+    # Quitar etiquetas HTML simples
+    text = re.sub(r"<.*?>", " ", text)
+
+    # Quitar entidades comunes
+    text = text.replace("&amp;", "&")
+    text = text.replace("&quot;", '"')
+    text = text.replace("&#39;", "'")
+
+    # Limpiar espacios
+    text = re.sub(r"\s+", " ", text).strip()
+
+    if len(text) > 500:
+        return text[:500] + "..."
+
+    return text
+
 
 @router.get("/hybrid-search")
 def hybrid_search(
@@ -22,8 +77,12 @@ def hybrid_search(
         name,
         price,
         release_date,
+        genres,
+        tags,
         pct_pos_total,
         num_reviews_total,
+        about_the_game,
+        detailed_description,
 
         1 - (
             embedding <=> CAST(:embedding AS vector)
@@ -68,6 +127,13 @@ def hybrid_search(
             "name": row.name,
             "price": row.price,
             "release_date": str(row.release_date),
+            "genres": clean_genres(row.genres),
+            "tags": clean_tags(row.tags),
+            "description": clean_description(
+                row.about_the_game
+                if row.about_the_game
+                else row.detailed_description
+            ),
             "rating": row.pct_pos_total,
             "reviews": row.num_reviews_total,
             "similarity": float(row.similarity),

@@ -65,7 +65,10 @@ for i, row in df.iterrows():
             average_playtime_forever,
 
             semantic_text,
-            embedding
+            embedding,
+
+            about_the_game,
+            detailed_description
         )
         VALUES (
             %s,%s,%s,%s,
@@ -74,6 +77,7 @@ for i, row in df.iterrows():
             %s,%s,
             %s,%s,
             %s,
+            %s,%s,
             %s,%s
         )
         """,
@@ -95,10 +99,20 @@ for i, row in df.iterrows():
             float(row["pct_pos_total"]) if pd.notna(row["pct_pos_total"]) else 0,
             int(row["num_reviews_total"]) if pd.notna(row["num_reviews_total"]) else 0,
 
-            float(row["average_playtime_forever"]) if pd.notna(row["average_playtime_forever"]) else 0,
+            float(row["average_playtime_forever"])
+            if pd.notna(row["average_playtime_forever"])
+            else 0,
 
             row["semantic_text"],
-            embedding
+            embedding,
+
+            str(row["about_the_game"])
+            if pd.notna(row["about_the_game"])
+            else "",
+
+            str(row["detailed_description"])
+            if pd.notna(row["detailed_description"])
+            else ""
         )
     )
 
