@@ -84,6 +84,9 @@ function App() {
             <strong>Fecha mínima:</strong> {data.filters.min_date}
           </p>
 
+        <p>
+           <strong>Fecha máxima:</strong> {data.filters.max_date}
+          </p>
           <p>
             <strong>Reviews mínimas:</strong> {data.filters.min_reviews}
           </p>
