@@ -14,7 +14,7 @@ def detect_price(text: str):
         soles = float(soles_match.group(1))
         return round(soles / 3.7, 2)
 
-    dollars_match = re.search(r"(\d+)\s*(dolares|dólares|usd|\$)", text)
+    dollars_match = re.search(r"(\d+)\s*(dolares|dólares|dÃ³lares|usd|\$)", text)
     if dollars_match:
         return float(dollars_match.group(1))
 
@@ -90,7 +90,7 @@ def detect_query(text: str):
         "como", "que", "cuesten", "cueste", "menos", "mas", "más",
         "de", "del", "despues", "después", "antes", "populares",
         "popular", "bien", "valorados", "valorado", "soles",
-        "dolares", "dólares", "usd", "a", "y", "con"
+        "dolares", "dólares", "dÃ³lares", "usd", "a", "y", "con"
     ]
 
     for word in words_to_remove:
