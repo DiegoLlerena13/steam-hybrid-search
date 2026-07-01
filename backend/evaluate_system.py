@@ -22,7 +22,7 @@ EVAL_LIMIT = int(os.getenv("EVAL_LIMIT", "0"))
 
 TESTS = [
     {
-        "prompt": "juegos de zombies cooperativos de supervivencia populares con menos de 60 dolares",
+        "prompt": "quiero juegos de zombies para jugar con amigos, populares y que cuesten menos de 60 dolares",
         "relevant": [
             "Project Zomboid",
             "DayZ",
@@ -32,7 +32,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos tipo Dark Souls de fantasia oscura populares despues de 2015 y menos de 60 dolares",
+        "prompt": "recomiendame juegos parecidos a Dark Souls de fantasia oscura despues de 2015",
         "relevant": [
             "ELDEN RING",
             "DARK SOULS III",
@@ -42,7 +42,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos pixel art de aventura metroidvania bien valorados con menos de 40 dolares",
+        "prompt": "busco juegos pixel art de aventura que sean buenos y baratos",
         "relevant": [
             "Terraria",
             "Stardew Valley",
@@ -52,7 +52,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "rpg de fantasia medieval populares entre 2015 y 2024",
+        "prompt": "quiero un rpg de fantasia medieval popular entre 2015 y 2024",
         "relevant": [
             "The Witcher 3 Wild Hunt",
             "Baldur's Gate 3",
@@ -62,7 +62,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "simuladores de granja y vida relajante con precio menor a 40 dolares",
+        "prompt": "juegos tranquilos de granja y vida relajante con menos de 40 dolares",
         "relevant": [
             "Stardew Valley",
             "Farming Simulator 22",
@@ -72,7 +72,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "shooters competitivos multijugador populares con mas de 10000 reseñas",
+        "prompt": "quiero shooters competitivos multijugador con muchas reseñas",
         "relevant": [
             "Counter-Strike 2",
             "Tom Clancy's Rainbow Six Siege",
@@ -82,7 +82,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos de mundo abierto fantasia y exploracion populares despues de 2015",
+        "prompt": "juegos de mundo abierto para explorar despues de 2015",
         "relevant": [
             "The Elder Scrolls V Skyrim Special Edition",
             "The Witcher 3 Wild Hunt",
@@ -92,7 +92,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "metroidvania de fantasia oscura y plataformas con menos de 40 dolares",
+        "prompt": "busco metroidvania de fantasia oscura con menos de 40 dolares",
         "relevant": [
             "Hollow Knight",
             "Dead Cells",
@@ -102,7 +102,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos de supervivencia sandbox crafting mundo abierto populares",
+        "prompt": "quiero juegos de supervivencia sandbox crafting populares",
         "relevant": [
             "Terraria",
             "Valheim",
@@ -112,7 +112,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "roguelike de accion y mazmorras con muchas reseñas y menos de 40 dolares",
+        "prompt": "recomiendame roguelikes de accion con mazmorras y muchas reseñas",
         "relevant": [
             "Hades",
             "The Binding of Isaac Rebirth",
@@ -122,7 +122,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "city builder estrategia y gestion populares entre 2015 y 2024",
+        "prompt": "quiero juegos de construir ciudades y gestionar recursos",
         "relevant": [
             "Cities Skylines",
             "Cities Skylines II",
@@ -132,7 +132,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos de terror psicologico y supervivencia populares con menos de 60 dolares",
+        "prompt": "busco juegos de terror psicologico y supervivencia con menos de 60 dolares",
         "relevant": [
             "Resident Evil 2",
             "Resident Evil 4",
@@ -142,7 +142,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos de exploracion espacial ciencia ficcion y supervivencia sandbox",
+        "prompt": "juegos de exploracion espacial y ciencia ficcion tipo sandbox",
         "relevant": [
             "No Man's Sky",
             "Elite Dangerous",
@@ -152,7 +152,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "estrategia por turnos de civilizacion e imperios populares",
+        "prompt": "quiero juegos de estrategia por turnos de civilizaciones e imperios",
         "relevant": [
             "Sid Meier's Civilization VI",
             "Total War WARHAMMER III",
@@ -162,7 +162,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "simulacion de carreras realista con autos populares y menos de 70 dolares",
+        "prompt": "busco juegos de carreras realistas con autos populares",
         "relevant": [
             "Assetto Corsa",
             "Forza Horizon 5",
@@ -172,7 +172,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos de futbol deportes y simulacion populares",
+        "prompt": "juegos de futbol y deportes populares para pc",
         "relevant": [
             "EA SPORTS FC 24",
             "eFootball",
@@ -182,7 +182,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos anime de accion peleas y aventura despues de 2015",
+        "prompt": "quiero juegos anime de accion y peleas despues de 2015",
         "relevant": [
             "NARUTO SHIPPUDEN Ultimate Ninja STORM 4",
             "DRAGON BALL FighterZ",
@@ -192,7 +192,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos cozy relajantes casuales bien valorados con menos de 30 dolares",
+        "prompt": "juegos cozy relajantes y casuales bien valorados",
         "relevant": [
             "Stardew Valley",
             "Unpacking",
@@ -202,7 +202,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "juegos de cartas estrategia deckbuilding roguelike con menos de 40 dolares",
+        "prompt": "quiero juegos de cartas tipo deckbuilding roguelike",
         "relevant": [
             "Slay the Spire",
             "Balatro",
@@ -212,7 +212,7 @@ TESTS = [
         ],
     },
     {
-        "prompt": "mmorpg de fantasia online masivo populares despues de 2010",
+        "prompt": "busco mmorpg de fantasia online populares despues de 2010",
         "relevant": [
             "FINAL FANTASY XIV Online",
             "The Elder Scrolls Online",
@@ -221,8 +221,307 @@ TESTS = [
             "Guild Wars 2",
         ],
     },
+    {
+        "prompt": "quiero juegos parecidos a Minecraft de construccion y supervivencia",
+        "relevant": [
+            "Terraria",
+            "Valheim",
+            "Starbound",
+            "Creativerse",
+            "Scrap Mechanic",
+        ],
+    },
+    {
+        "prompt": "juegos tipo Stardew Valley relajantes y de granja",
+        "relevant": [
+            "Stardew Valley",
+            "My Time at Portia",
+            "Coral Island",
+            "Sun Haven",
+            "Harvest Moon The Winds of Anthos",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de estrategia en tiempo real populares",
+        "relevant": [
+            "Age of Empires II Definitive Edition",
+            "Age of Empires IV",
+            "Total War WARHAMMER III",
+            "Company of Heroes 2",
+            "Northgard",
+        ],
+    },
+    {
+        "prompt": "juegos de guerra tactica y disparos realistas con muchas reseñas",
+        "relevant": [
+            "Squad",
+            "Arma 3",
+            "Insurgency Sandstorm",
+            "Ready or Not",
+            "Hell Let Loose",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de mundo abierto con crimen y accion",
+        "relevant": [
+            "Grand Theft Auto V",
+            "Cyberpunk 2077",
+            "Mafia Definitive Edition",
+            "Sleeping Dogs Definitive Edition",
+            "Watch Dogs 2",
+        ],
+    },
+    {
+        "prompt": "recomiendame juegos de pelea populares para jugar con amigos",
+        "relevant": [
+            "TEKKEN 8",
+            "Street Fighter 6",
+            "Mortal Kombat 11",
+            "DRAGON BALL FighterZ",
+            "GUILTY GEAR STRIVE",
+        ],
+    },
+    {
+        "prompt": "busco juegos de plataformas dificiles y bien valorados",
+        "relevant": [
+            "Celeste",
+            "Hollow Knight",
+            "Super Meat Boy",
+            "Ori and the Blind Forest Definitive Edition",
+            "Cuphead",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de puzzles tranquilos y bonitos con menos de 30 dolares",
+        "relevant": [
+            "Portal 2",
+            "The Witness",
+            "Baba Is You",
+            "Unpacking",
+            "Dorfromantik",
+        ],
+    },
+    {
+        "prompt": "juegos cooperativos divertidos para jugar en pareja o con amigos",
+        "relevant": [
+            "It Takes Two",
+            "Overcooked 2",
+            "Human Fall Flat",
+            "Moving Out",
+            "Portal 2",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de supervivencia en bosque o naturaleza",
+        "relevant": [
+            "The Forest",
+            "Sons Of The Forest",
+            "Green Hell",
+            "Valheim",
+            "Don't Starve Together",
+        ],
+    },
+    {
+        "prompt": "juegos de gestion de colonias y supervivencia populares",
+        "relevant": [
+            "RimWorld",
+            "Oxygen Not Included",
+            "Frostpunk",
+            "Dwarf Fortress",
+            "Going Medieval",
+        ],
+    },
+    {
+        "prompt": "busco juegos de simulacion de camiones o manejo tranquilo",
+        "relevant": [
+            "Euro Truck Simulator 2",
+            "American Truck Simulator",
+            "SnowRunner",
+            "BeamNG.drive",
+            "My Summer Car",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de piratas y aventura en mundo abierto",
+        "relevant": [
+            "Sea of Thieves",
+            "Assassin's Creed IV Black Flag",
+            "Sid Meier's Pirates",
+            "Tempest Pirate Action RPG",
+            "King of Seas",
+        ],
+    },
+    {
+        "prompt": "juegos de vampiros o fantasia oscura con accion",
+        "relevant": [
+            "V Rising",
+            "Castlevania Advance Collection",
+            "CODE VEIN",
+            "Darkest Dungeon",
+            "Vampire Survivors",
+        ],
+    },
+    {
+        "prompt": "quiero juegos baratos de estrategia y cartas",
+        "relevant": [
+            "Slay the Spire",
+            "Balatro",
+            "Monster Train",
+            "Inscryption",
+            "Griftlands",
+        ],
+    },
+    {
+        "prompt": "juegos de robots o mechas con accion despues de 2015",
+        "relevant": [
+            "Armored Core VI Fires of Rubicon",
+            "Titanfall 2",
+            "MechWarrior 5 Mercenaries",
+            "Daemon X Machina",
+            "GUNDAM EVOLUTION",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de estrategia espacial y gestion de imperios",
+        "relevant": [
+            "Stellaris",
+            "Endless Space 2",
+            "Galactic Civilizations III",
+            "Sins of a Solar Empire Rebellion",
+            "Distant Worlds 2",
+        ],
+    },
+    {
+        "prompt": "juegos de dinosaurios supervivencia y mundo abierto",
+        "relevant": [
+            "ARK Survival Evolved",
+            "ARK Survival Ascended",
+            "The Isle",
+            "Jurassic World Evolution 2",
+            "Path of Titans",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de parkour y accion en primera persona",
+        "relevant": [
+            "Dying Light",
+            "Dying Light 2 Stay Human",
+            "Mirror's Edge Catalyst",
+            "Ghostrunner",
+            "Titanfall 2",
+        ],
+    },
+    {
+        "prompt": "juegos de investigacion detectives y misterio",
+        "relevant": [
+            "Disco Elysium",
+            "Return of the Obra Dinn",
+            "The Case of the Golden Idol",
+            "L.A. Noire",
+            "Sherlock Holmes Chapter One",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de pelea medieval con espadas populares",
+        "relevant": [
+            "Mount & Blade II Bannerlord",
+            "Chivalry 2",
+            "Mordhau",
+            "FOR HONOR",
+            "Kingdom Come Deliverance",
+        ],
+    },
+    {
+        "prompt": "juegos de construccion de fabricas y automatizacion",
+        "relevant": [
+            "Factorio",
+            "Satisfactory",
+            "Dyson Sphere Program",
+            "Shapez",
+            "Mindustry",
+        ],
+    },
+    {
+        "prompt": "busco juegos de accion cooperativa contra monstruos",
+        "relevant": [
+            "Monster Hunter World",
+            "Monster Hunter Rise",
+            "Deep Rock Galactic",
+            "Warhammer Vermintide 2",
+            "Killing Floor 2",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de rol con mucha historia y decisiones",
+        "relevant": [
+            "Baldur's Gate 3",
+            "Disco Elysium",
+            "The Witcher 3 Wild Hunt",
+            "Divinity Original Sin 2",
+            "Pillars of Eternity",
+        ],
+    },
+    {
+        "prompt": "juegos de supervivencia bajo el agua o en el oceano",
+        "relevant": [
+            "Subnautica",
+            "Subnautica Below Zero",
+            "Raft",
+            "Stranded Deep",
+            "ABZU",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de terror cooperativo para jugar con amigos",
+        "relevant": [
+            "Phasmophobia",
+            "Dead by Daylight",
+            "The Forest",
+            "Sons Of The Forest",
+            "Lethal Company",
+        ],
+    },
+    {
+        "prompt": "juegos casuales populares para pasar el rato",
+        "relevant": [
+            "Among Us",
+            "Fall Guys",
+            "Geometry Dash",
+            "Vampire Survivors",
+            "People Playground",
+        ],
+    },
+    {
+        "prompt": "quiero juegos de disparos gratis y populares",
+        "relevant": [
+            "Counter-Strike 2",
+            "Team Fortress 2",
+            "Apex Legends",
+            "PUBG BATTLEGROUNDS",
+            "Warframe",
+        ],
+    },
+    {
+        "prompt": "juegos de fantasia online con mucho contenido y muchas reseñas",
+        "relevant": [
+            "FINAL FANTASY XIV Online",
+            "The Elder Scrolls Online",
+            "Lost Ark",
+            "Black Desert",
+            "Path of Exile",
+        ],
+    },
+    {
+        "prompt": "quiero juegos indie bien valorados con pixel art y aventura",
+        "relevant": [
+            "Undertale",
+            "Celeste",
+            "Hollow Knight",
+            "Dead Cells",
+            "Stardew Valley",
+        ],
+    },
 ]
-
 
 def normalize_title(text_value: str) -> str:
     """
