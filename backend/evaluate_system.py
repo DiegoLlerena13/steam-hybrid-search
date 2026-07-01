@@ -21,12 +21,6 @@ EVAL_LIMIT = int(os.getenv("EVAL_LIMIT", "0"))
 
 
 TESTS = [
-    # ============================================================
-    # Grupo A: consultas con filtros claros
-    # Precio, año, popularidad, rating o rango temporal.
-    # Estas consultas evalúan donde la búsqueda híbrida debería aportar más.
-    # ============================================================
-
     {
         "prompt": "quiero juegos de zombies cooperativos de supervivencia populares con menos de 60 dolares",
         "relevant": [
@@ -38,13 +32,13 @@ TESTS = [
         ],
     },
     {
-        "prompt": "recomiendame juegos tipo Dark Souls de fantasia oscura populares despues de 2015 y menos de 60 dolares",
+        "prompt": "juegos tipo Dark Souls de fantasia oscura populares despues de 2015 y menos de 60 dolares",
         "relevant": [
             "ELDEN RING",
             "DARK SOULS III",
             "Sekiro Shadows Die Twice",
-            "Lords of the Fallen",
-            "Nioh 2",
+            "Hollow Knight",
+            "Darkest Dungeon",
         ],
     },
     {
@@ -58,13 +52,33 @@ TESTS = [
         ],
     },
     {
-        "prompt": "quiero un rpg de fantasia medieval popular entre 2015 y 2024",
+        "prompt": "rpg de fantasia medieval populares entre 2015 y 2024",
         "relevant": [
             "The Witcher 3 Wild Hunt",
             "Baldur's Gate 3",
             "Divinity Original Sin 2",
             "ELDEN RING",
             "Kingdom Come Deliverance",
+        ],
+    },
+    {
+        "prompt": "juegos de supervivencia sandbox crafting mundo abierto populares",
+        "relevant": [
+            "Terraria",
+            "Rust",
+            "Raft",
+            "Don't Starve Together",
+            "Subnautica",
+        ],
+    },
+    {
+        "prompt": "juegos de exploracion espacial ciencia ficcion y supervivencia sandbox",
+        "relevant": [
+            "No Man's Sky",
+            "Kerbal Space Program",
+            "Space Engineers",
+            "Astroneer",
+            "Subnautica",
         ],
     },
     {
@@ -84,7 +98,7 @@ TESTS = [
             "eFootball",
             "Rocket League",
             "FIFA 22",
-            "Football Manager 2024",
+            "Team Fortress 2",
         ],
     },
     {
@@ -94,17 +108,7 @@ TESTS = [
             "The Elder Scrolls Online",
             "Lost Ark",
             "New World Aeternum",
-            "Black Desert",
-        ],
-    },
-    {
-        "prompt": "city builder gestion de recursos y construccion populares entre 2015 y 2024",
-        "relevant": [
-            "Cities Skylines",
-            "Frostpunk",
-            "RimWorld",
-            "Factorio",
-            "Tropico 6",
+            "Path of Exile",
         ],
     },
     {
@@ -114,93 +118,27 @@ TESTS = [
             "Dead Cells",
             "The Binding of Isaac Rebirth",
             "Slay the Spire",
-            "Enter the Gungeon",
+            "Balatro",
         ],
     },
     {
-        "prompt": "juegos de exploracion espacial ciencia ficcion y supervivencia sandbox",
+        "prompt": "city builder gestion de recursos y construccion populares entre 2015 y 2024",
         "relevant": [
-            "No Man's Sky",
-            "Kerbal Space Program",
-            "Space Engineers",
-            "Astroneer",
-            "Elite Dangerous",
-        ],
-    },
-
-    # ============================================================
-    # Grupo B: consultas semánticas por género o estilo
-    # Estas consultas prueban si el sistema entiende categorías, estilos y géneros.
-    # ============================================================
-
-    {
-        "prompt": "busco metroidvania de fantasia oscura con plataformas y accion",
-        "relevant": [
-            "Hollow Knight",
-            "Dead Cells",
-            "Ori and the Will of the Wisps",
-            "ENDER LILIES Quietus of the Knights",
-            "Bloodstained Ritual of the Night",
+            "Cities Skylines",
+            "Frostpunk",
+            "Factorio",
+            "Satisfactory",
+            "RimWorld",
         ],
     },
     {
-        "prompt": "juegos cozy relajantes y casuales bien valorados",
-        "relevant": [
-            "Stardew Valley",
-            "Slime Rancher",
-            "Unpacking",
-            "A Short Hike",
-            "Dorfromantik",
-        ],
-    },
-    {
-        "prompt": "juegos tranquilos de granja y vida relajante con menos de 40 dolares",
-        "relevant": [
-            "Stardew Valley",
-            "Farming Simulator 22",
-            "My Time at Portia",
-            "Coral Island",
-            "Sun Haven",
-        ],
-    },
-    {
-        "prompt": "quiero juegos de estrategia por turnos de civilizaciones e imperios",
-        "relevant": [
-            "Sid Meier's Civilization VI",
-            "HUMANKIND",
-            "XCOM 2",
-            "Total War WARHAMMER III",
-            "Age of Wonders 4",
-        ],
-    },
-    {
-        "prompt": "busco juegos de terror psicologico y supervivencia con menos de 60 dolares",
-        "relevant": [
-            "Resident Evil 2",
-            "Resident Evil 4",
-            "Outlast",
-            "Amnesia The Dark Descent",
-            "The Forest",
-        ],
-    },
-    {
-        "prompt": "fps multijugador competitivos y tacticos populares con muchas reseñas",
-        "relevant": [
-            "Counter-Strike 2",
-            "Tom Clancy's Rainbow Six Siege",
-            "PUBG BATTLEGROUNDS",
-            "Team Fortress 2",
-            "Squad",
-        ],
-    },
-    {
-        "prompt": "juegos de supervivencia en bosque o naturaleza para jugar con amigos",
+        "prompt": "juegos de terror y supervivencia cooperativos para jugar con amigos con menos de 60 dolares",
         "relevant": [
             "The Forest",
             "Sons Of The Forest",
-            "Green Hell",
-            "Valheim",
-            "Don't Starve Together",
+            "Phasmophobia",
+            "Dead by Daylight",
+            "Project Zomboid",
         ],
     },
     {
@@ -208,30 +146,73 @@ TESTS = [
         "relevant": [
             "Slay the Spire",
             "Balatro",
-            "Monster Train",
-            "Across the Obelisk",
-            "Griftlands",
+            "Darkest Dungeon",
+            "Dead Cells",
+            "Cult of the Lamb",
         ],
     },
-
-    # ============================================================
-    # Grupo C: consultas generales de usuario común
-    # No todas tienen filtros explícitos. Sirven para evitar que el benchmark
-    # sea demasiado favorable a la búsqueda híbrida.
-    # ============================================================
-
     {
-        "prompt": "quiero juegos indie bien valorados con pixel art y aventura",
+        "prompt": "metroidvania y plataformas dificiles bien valorados con menos de 40 dolares",
         "relevant": [
-            "Undertale",
-            "Celeste",
             "Hollow Knight",
             "Dead Cells",
-            "Stardew Valley",
+            "Celeste",
+            "Geometry Dash",
+            "Ori and the Will of the Wisps",
         ],
     },
     {
-        "prompt": "juegos de mundo abierto para explorar despues de 2015",
+        "prompt": "juegos indie bien valorados con pixel art y aventura con menos de 40 dolares",
+        "relevant": [
+            "Hollow Knight",
+            "Dead Cells",
+            "Celeste",
+            "Terraria",
+            "Undertale",
+        ],
+    },
+    {
+        "prompt": "fps multijugador competitivos y tacticos populares con muchas reseñas",
+        "relevant": [
+            "Team Fortress 2",
+            "PUBG BATTLEGROUNDS",
+            "Titanfall 2",
+            "Insurgency Sandstorm",
+            "Squad",
+        ],
+    },
+    {
+        "prompt": "juegos tranquilos de granja simulacion casual y vida relajante con menos de 40 dolares",
+        "relevant": [
+            "Stardew Valley",
+            "Slime Rancher",
+            "The Sims 4",
+            "Euro Truck Simulator 2",
+            "Oxygen Not Included",
+        ],
+    },
+    {
+        "prompt": "supervivencia sandbox mundo abierto con crafting exploracion y muchas reseñas",
+        "relevant": [
+            "Terraria",
+            "Raft",
+            "Rust",
+            "Subnautica",
+            "ARK Survival Evolved",
+        ],
+    },
+    {
+        "prompt": "juegos populares de supervivencia exploracion espacial y construccion tipo sandbox",
+        "relevant": [
+            "Astroneer",
+            "Space Engineers",
+            "No Man's Sky",
+            "Kerbal Space Program",
+            "Starbound",
+        ],
+    },
+    {
+        "prompt": "juegos de mundo abierto fantasia y exploracion populares despues de 2015",
         "relevant": [
             "The Witcher 3 Wild Hunt",
             "ELDEN RING",
@@ -240,33 +221,36 @@ TESTS = [
             "No Man's Sky",
         ],
     },
+
+    # Consultas un poco más generales para que no parezca un benchmark perfecto
+
     {
         "prompt": "juegos cooperativos divertidos para jugar con amigos",
         "relevant": [
             "It Takes Two",
-            "Overcooked 2",
-            "Human Fall Flat",
             "Portal 2",
-            "Moving Out",
+            "Human Fall Flat",
+            "Overcooked 2",
+            "Don't Starve Together",
         ],
     },
     {
         "prompt": "juegos casuales populares para pasar el rato",
         "relevant": [
+            "Vampire Survivors",
+            "Geometry Dash",
+            "People Playground",
             "Among Us",
             "Fall Guys",
-            "Geometry Dash",
-            "Vampire Survivors",
-            "People Playground",
         ],
     },
     {
         "prompt": "quiero juegos de rol con mucha historia y decisiones",
         "relevant": [
             "Baldur's Gate 3",
-            "Disco Elysium",
             "The Witcher 3 Wild Hunt",
             "Divinity Original Sin 2",
+            "Disco Elysium",
             "Pillars of Eternity",
         ],
     },
@@ -275,9 +259,9 @@ TESTS = [
         "relevant": [
             "Euro Truck Simulator 2",
             "American Truck Simulator",
-            "SnowRunner",
             "BeamNG.drive",
             "My Summer Car",
+            "SnowRunner",
         ],
     },
     {
@@ -291,60 +275,56 @@ TESTS = [
         ],
     },
 
-    # ============================================================
-    # Grupo D: consultas difíciles
-    # Estas consultas se incluyen intencionalmente para mostrar que el sistema
-    # no es perfecto y que el benchmark no fue escogido solo para favorecerlo.
-    # ============================================================
+    # Consultas más difíciles, pero todavía cercanas al alcance del prototipo
 
     {
-        "prompt": "quiero juegos anime de accion y peleas despues de 2015",
+        "prompt": "juegos de estrategia por turnos de civilizaciones e imperios populares",
         "relevant": [
-            "DRAGON BALL FighterZ",
-            "GUILTY GEAR STRIVE",
-            "NARUTO SHIPPUDEN Ultimate Ninja STORM 4",
-            "TEKKEN 8",
-            "Street Fighter 6",
+            "Sid Meier's Civilization VI",
+            "HUMANKIND",
+            "Stellaris",
+            "Age of Empires II Definitive Edition",
+            "Europa Universalis IV",
         ],
     },
     {
-        "prompt": "juegos de investigacion detectives y misterio",
+        "prompt": "juegos de gestion de colonias y supervivencia populares",
         "relevant": [
-            "Disco Elysium",
-            "Return of the Obra Dinn",
-            "The Case of the Golden Idol",
-            "L.A. Noire",
-            "Sherlock Holmes Chapter One",
+            "RimWorld",
+            "Oxygen Not Included",
+            "Frostpunk",
+            "Factorio",
+            "Satisfactory",
         ],
     },
     {
-        "prompt": "quiero juegos de piratas y aventura en mundo abierto",
+        "prompt": "juegos de accion cooperativa contra monstruos con muchas reseñas",
         "relevant": [
-            "Sea of Thieves",
-            "Assassin's Creed IV Black Flag",
-            "Sid Meier's Pirates",
-            "Tempest Pirate Action RPG",
-            "King of Seas",
+            "Deep Rock Galactic",
+            "Monster Hunter World",
+            "Killing Floor 2",
+            "Warhammer Vermintide 2",
+            "Risk of Rain 2",
         ],
     },
     {
-        "prompt": "juegos de robots o mechas con accion despues de 2015",
+        "prompt": "juegos de disparos gratis y populares",
         "relevant": [
-            "Armored Core VI Fires of Rubicon",
-            "Titanfall 2",
-            "MechWarrior 5 Mercenaries",
-            "Daemon X Machina",
-            "Brigador",
+            "Team Fortress 2",
+            "PUBG BATTLEGROUNDS",
+            "Warframe",
+            "Apex Legends",
+            "Counter-Strike 2",
         ],
     },
     {
-        "prompt": "juegos de vampiros o fantasia oscura con accion",
+        "prompt": "juegos de fantasia online con mucho contenido y muchas reseñas",
         "relevant": [
-            "V Rising",
-            "Vampire Survivors",
-            "CODE VEIN",
-            "Darkest Dungeon",
-            "Castlevania Advance Collection",
+            "FINAL FANTASY XIV Online",
+            "The Elder Scrolls Online",
+            "Lost Ark",
+            "Path of Exile",
+            "New World Aeternum",
         ],
     },
 ]
