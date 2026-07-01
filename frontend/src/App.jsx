@@ -10,67 +10,89 @@ import {
 import "./App.css";
 
 function App() {
-  const [query, setQuery] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [minDate, setMinDate] = useState("");
-  const [minReviews, setMinReviews] = useState("");
-  const [minRating, setMinRating] = useState("");
-  const [results, setResults] = useState([]);
+  const [prompt, setPrompt] = useState("");
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const searchGames = async () => {
-    const url =
-      `http://127.0.0.1:8000/hybrid-search` +
-      `?query=${encodeURIComponent(query)}` +
-      `&max_price=${maxPrice || 999}` +
-      `&min_date=${minDate || "2000-01-01"}` +
-      `&min_reviews=${minReviews || 0}` +
-      `&min_rating=${minRating || 0}`;
+    if (!prompt.trim()) {
+      setError("Ingresa una consulta en lenguaje natural.");
+      return;
+    }
 
-    const response = await fetch(url);
-    const data = await response.json();
+    try {
+      setLoading(true);
+      setError("");
+      setData(null);
 
-    setResults(data);
+      const url =
+        `http://127.0.0.1:8000/natural-search` +
+        `?prompt=${encodeURIComponent(prompt)}`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("Error al consultar la API");
+      }
+
+      const result = await response.json();
+      setData(result);
+    } catch (error) {
+      setError("No se pudo realizar la búsqueda.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const results = data?.results || [];
 
   return (
     <div className="container">
       <h1>Steam Hybrid Search</h1>
 
-      <input
-        type="text"
-        placeholder="Ej: souls-like dark fantasy action rpg"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+      <textarea
+        placeholder="Ej: juegos similares a Dark Souls que cuesten menos de 60 dólares, populares y después del 2020"
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        rows={4}
       />
 
-      <input
-        type="number"
-        placeholder="Precio máximo"
-        value={maxPrice}
-        onChange={(e) => setMaxPrice(e.target.value)}
-      />
+      <button onClick={searchGames} disabled={loading}>
+        {loading ? "Buscando..." : "Buscar"}
+      </button>
 
-      <input
-        type="date"
-        value={minDate}
-        onChange={(e) => setMinDate(e.target.value)}
-      />
+      {error && <p className="error">{error}</p>}
 
-      <input
-        type="number"
-        placeholder="Reviews mínimas"
-        value={minReviews}
-        onChange={(e) => setMinReviews(e.target.value)}
-      />
+      {data && (
+        <div className="transparency">
+          <h2>Interpretación de la consulta</h2>
 
-      <input
-        type="number"
-        placeholder="Rating mínimo %"
-        value={minRating}
-        onChange={(e) => setMinRating(e.target.value)}
-      />
+          <p>
+            <strong>Consulta original:</strong> {data.original_prompt}
+          </p>
 
-      <button onClick={searchGames}>Buscar</button>
+          <p>
+            <strong>Consulta interpretada:</strong> {data.interpreted_query}
+          </p>
+
+          <p>
+            <strong>Precio máximo:</strong> {data.filters.max_price_usd} USD
+          </p>
+
+          <p>
+            <strong>Fecha mínima:</strong> {data.filters.min_date}
+          </p>
+
+          <p>
+            <strong>Reviews mínimas:</strong> {data.filters.min_reviews}
+          </p>
+
+          <p>
+            <strong>Rating mínimo:</strong> {data.filters.min_rating}%
+          </p>
+        </div>
+      )}
 
       {results.length > 0 && (
         <div className="chart">
@@ -91,12 +113,12 @@ function App() {
         {results.map((game, index) => (
           <div key={index} className="card">
             <h3>{game.name}</h3>
-            <p>💰 Precio: ${game.price}</p>
-            <p>📅 Fecha: {game.release_date}</p>
-            <p>⭐ Rating: {game.rating}%</p>
-            <p>📝 Reviews: {game.reviews}</p>
-            <p>🎯 Similarity: {Number(game.similarity).toFixed(3)}</p>
-            <p>🏆 Final Score: {Number(game.final_score).toFixed(3)}</p>
+            <p>Precio: ${game.price}</p>
+            <p>Fecha: {game.release_date}</p>
+            <p>Rating: {game.rating}%</p>
+            <p>Reviews: {game.reviews}</p>
+            <p>Similarity: {Number(game.similarity).toFixed(3)}</p>
+            <p>Final Score: {Number(game.final_score).toFixed(3)}</p>
           </div>
         ))}
       </div>
