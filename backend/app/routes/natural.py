@@ -227,6 +227,26 @@ def detect_query(text: str):
 
         "mmorpg": "massively multiplayer online fantasy rpg",
         "online masivo": "massively multiplayer online fantasy rpg",
+        
+        "shooters": "competitive multiplayer fps tactical shooter",
+        "shooter": "competitive multiplayer fps tactical shooter",
+        "fps": "competitive multiplayer fps tactical shooter",
+        "competitivos": "competitive multiplayer fps tactical shooter",
+        "multijugador": "multiplayer online competitive",
+
+        "mundo abierto": "open world exploration adventure rpg",
+        "exploracion": "exploration adventure open world",
+        "exploración": "exploration adventure open world",
+
+        "terror psicologico": "psychological horror survival scary",
+        "terror": "psychological horror survival scary",
+        "psicologico": "psychological horror survival scary",
+        "psicológico": "psychological horror survival scary",
+
+        "anime": "anime fighting action jrpg visual novel character combat",
+        "jrpg": "anime jrpg story rich action adventure",
+        "peleas": "fighting action combat anime arena",
+        "lucha": "fighting action combat anime arena",
     }
 
     interpreted_terms = []
@@ -252,7 +272,7 @@ def detect_query(text: str):
     ]
 
     for word in words_to_remove:
-        clean_text = clean_text.replace(word, "")
+        clean_text = re.sub(rf"\b{re.escape(word)}\b", " ", clean_text)
 
     clean_text = re.sub(r"\d+", "", clean_text)
     clean_text = re.sub(r"\s+", " ", clean_text).strip()
