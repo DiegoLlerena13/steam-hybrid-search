@@ -10,75 +10,112 @@ import {
 import "./App.css";
 
 function App() {
-  const [query, setQuery] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [minDate, setMinDate] = useState("");
-  const [minReviews, setMinReviews] = useState("");
-  const [minRating, setMinRating] = useState("");
+  const [prompt, setPrompt] = useState("");
   const [results, setResults] = useState([]);
+  const [interpretedQuery, setInterpretedQuery] = useState("");
+  const [filters, setFilters] = useState(null);
+  const [transparency, setTransparency] = useState(null);
 
   const searchGames = async () => {
     const url =
-      `http://127.0.0.1:8000/hybrid-search` +
-      `?query=${encodeURIComponent(query)}` +
-      `&max_price=${maxPrice || 999}` +
-      `&min_date=${minDate || "2000-01-01"}` +
-      `&min_reviews=${minReviews || 0}` +
-      `&min_rating=${minRating || 0}`;
+      `http://127.0.0.1:8000/natural-search` +
+      `?prompt=${encodeURIComponent(prompt)}`;
 
     const response = await fetch(url);
     const data = await response.json();
 
-    setResults(data);
+    setInterpretedQuery(data.interpreted_query);
+    setFilters(data.filters);
+    setTransparency(data.transparency);
+    setResults(data.results);
   };
 
   return (
     <div className="container">
       <h1>Steam Hybrid Search</h1>
 
-      <input
-        type="text"
-        placeholder="Ej: souls-like dark fantasy action rpg"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+      <p className="subtitle">
+        Busca videojuegos usando lenguaje natural.
+      </p>
+
+      <textarea
+        placeholder="Ej: juegos parecidos a dark souls populares después del 2020 y menos de 50 dólares"
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
       />
 
-      <input
-        type="number"
-        placeholder="Precio máximo"
-        value={maxPrice}
-        onChange={(e) => setMaxPrice(e.target.value)}
-      />
+      <button onClick={searchGames}>
+        Buscar
+      </button>
 
-      <input
-        type="date"
-        value={minDate}
-        onChange={(e) => setMinDate(e.target.value)}
-      />
+      {filters && (
+        <div className="interpretation">
+          <h2>Transparencia del sistema</h2>
 
-      <input
-        type="number"
-        placeholder="Reviews mínimas"
-        value={minReviews}
-        onChange={(e) => setMinReviews(e.target.value)}
-      />
+          <p>
+            <strong>Consulta original:</strong> {prompt}
+          </p>
 
-      <input
-        type="number"
-        placeholder="Rating mínimo %"
-        value={minRating}
-        onChange={(e) => setMinRating(e.target.value)}
-      />
+          <p>
+            <strong>Consulta interpretada para embeddings:</strong>{" "}
+            {interpretedQuery}
+          </p>
 
-      <button onClick={searchGames}>Buscar</button>
+          {transparency && (
+            <>
+              <p>
+                <strong>🏷️ Conceptos semánticos extraídos:</strong>{" "}
+                {transparency.semantic_tags.join(", ")}
+              </p>
+
+              <p>
+                <strong>🧠 Parte vectorial:</strong>{" "}
+                {transparency.vector_part}
+              </p>
+
+              <p>
+                <strong>🗄️ Parte SQL:</strong>{" "}
+                {transparency.sql_part}
+              </p>
+
+              <p>
+                <strong>📊 Fórmula de ranking:</strong>{" "}
+                {transparency.ranking_formula}
+              </p>
+            </>
+          )}
+
+          <div className="filters">
+            <span>💰 Precio máximo: ${filters.max_price_usd}</span>
+            <span>📅 Fecha mínima: {filters.min_date}</span>
+            <span>📝 Reviews mínimas: {filters.min_reviews}</span>
+            <span>⭐ Rating mínimo: {filters.min_rating}%</span>
+          </div>
+
+          {transparency && (
+            <div className="filters">
+              <span>{transparency.recognized_filters.price}</span>
+              <span>{transparency.recognized_filters.release_date}</span>
+              <span>{transparency.recognized_filters.reviews}</span>
+              <span>{transparency.recognized_filters.rating}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {results.length > 0 && (
         <div className="chart">
-          <h2>Comparación de score final</h2>
+          <h2>Comparación de score final por videojuego</h2>
 
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={420}>
             <BarChart data={results}>
-              <XAxis dataKey="name" hide />
+              <XAxis
+                dataKey="name"
+                angle={-25}
+                textAnchor="end"
+                height={120}
+                interval={0}
+              />
               <YAxis />
               <Tooltip />
               <Bar dataKey="final_score" />
@@ -90,13 +127,49 @@ function App() {
       <div className="results">
         {results.map((game, index) => (
           <div key={index} className="card">
-            <h3>{game.name}</h3>
+            <h3>
+              {index + 1}. {game.name}
+            </h3>
+
             <p>💰 Precio: ${game.price}</p>
-            <p>📅 Fecha: {game.release_date}</p>
-            <p>⭐ Rating: {game.rating}%</p>
-            <p>📝 Reviews: {game.reviews}</p>
-            <p>🎯 Similarity: {Number(game.similarity).toFixed(3)}</p>
-            <p>🏆 Final Score: {Number(game.final_score).toFixed(3)}</p>
+            <p>📅 Fecha de lanzamiento: {game.release_date}</p>
+            <p>⭐ Rating positivo: {game.rating}%</p>
+            <p>📝 Reviews totales: {game.reviews}</p>
+
+            <p>
+              🎯 Similitud semántica:{" "}
+              {Number(game.similarity).toFixed(3)}
+            </p>
+
+            <p>
+              🏆 Score final híbrido:{" "}
+              {Number(game.final_score).toFixed(3)}
+            </p>
+
+            {game.genres && (
+              <p>
+                <strong>🎮 Géneros:</strong>{" "}
+                {Array.isArray(game.genres)
+                  ? game.genres.join(", ")
+                  : game.genres}
+              </p>
+            )}
+
+            {game.tags && (
+              <p>
+                <strong>🏷️ Tags:</strong>{" "}
+                {Array.isArray(game.tags)
+                  ? game.tags.join(", ")
+                  : game.tags}
+              </p>
+            )}
+
+            {game.description && (
+              <div className="description">
+                <strong>📌 Presentación:</strong>
+                <p>{game.description}</p>
+              </div>
+            )}
           </div>
         ))}
       </div>
