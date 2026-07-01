@@ -74,6 +74,7 @@ def hybrid_search(
 
     sql = text("""
     SELECT
+        appid,
         name,
         price,
         release_date,
@@ -124,6 +125,7 @@ def hybrid_search(
 
     return [
         {
+            "appid": row.appid,
             "name": row.name,
             "price": row.price,
             "release_date": str(row.release_date),
