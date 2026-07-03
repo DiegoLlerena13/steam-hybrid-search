@@ -4,8 +4,11 @@ import re
 import unicodedata
 from typing import Any, Dict, List, Set
 
+from click import prompt
 import pandas as pd
+from pygments import filters
 import requests
+from rich import prompt
 from sqlalchemy import text
 
 from app.database import engine
@@ -19,6 +22,38 @@ K = 10
 #   EVAL_LIMIT=5 python evaluate_system.py
 EVAL_LIMIT = int(os.getenv("EVAL_LIMIT", "0"))
 
+WEIGHT_CONFIGS = [
+    {
+        "method": "Hibrida A 0.90/0.10/0.00",
+        "similarity_weight": 0.90,
+        "popularity_weight": 0.10,
+        "rating_weight": 0.00,
+    },
+    {
+        "method": "Hibrida B 0.80/0.15/0.05",
+        "similarity_weight": 0.80,
+        "popularity_weight": 0.15,
+        "rating_weight": 0.05,
+    },
+    {
+        "method": "Hibrida C 0.75/0.20/0.05",
+        "similarity_weight": 0.75,
+        "popularity_weight": 0.20,
+        "rating_weight": 0.05,
+    },
+    {
+        "method": "Hibrida D 0.60/0.30/0.10",
+        "similarity_weight": 0.60,
+        "popularity_weight": 0.30,
+        "rating_weight": 0.10,
+    },
+    {
+        "method": "Hibrida E 0.50/0.30/0.20",
+        "similarity_weight": 0.50,
+        "popularity_weight": 0.30,
+        "rating_weight": 0.20,
+    },
+]
 
 TESTS = [
     {
@@ -543,7 +578,12 @@ def call_search_api(query: str) -> List[Dict[str, Any]]:
     return results
 
 
-def call_natural_api(prompt: str) -> Dict[str, Any]:
+def call_natural_api(
+    prompt: str,
+    similarity_weight: float = 0.75,
+    popularity_weight: float = 0.20,
+    rating_weight: float = 0.05
+) -> Dict[str, Any]:
     """
     Ejecuta /natural-search, que representa el sistema final.
 
@@ -555,7 +595,12 @@ def call_natural_api(prompt: str) -> Dict[str, Any]:
     """
     response = requests.get(
         f"{BASE_URL}/natural-search",
-        params={"prompt": prompt},
+        params={
+    "prompt": prompt,
+    "similarity_weight": similarity_weight,
+    "popularity_weight": popularity_weight,
+    "rating_weight": rating_weight,
+},
         timeout=60,
     )
 
@@ -701,21 +746,21 @@ def main() -> None:
         resolved_relevant = resolved_info["resolved"]
         unresolved_relevant = resolved_info["unresolved"]
 
-        natural_response = call_natural_api(prompt)
+        base_response = call_natural_api(prompt)
 
-        interpreted_query = natural_response["interpreted_query"]
-        filters = natural_response.get("filters", {})
-        hybrid_results = natural_response.get("results", [])
+        interpreted_query = base_response["interpreted_query"]
+        filters = base_response.get("filters", {})
 
         vector_results = call_search_api(interpreted_query)
-
         vector_metrics = metrics(vector_results, resolved_relevant)
-        hybrid_metrics = metrics(hybrid_results, resolved_relevant)
 
         rows.append({
             "query": prompt,
             "interpreted_query": interpreted_query,
-            "method": "Vectorial",
+            "method": "Vectorial pura",
+            "similarity_weight": 1.00,
+            "popularity_weight": 0.00,
+            "rating_weight": 0.00,
             "hits": vector_metrics["hits"],
             "valid_relevant_count": vector_metrics["valid_relevant_count"],
             "unresolved_relevant_count": len(unresolved_relevant),
@@ -732,25 +777,39 @@ def main() -> None:
             ),
         })
 
-        rows.append({
-            "query": prompt,
-            "interpreted_query": interpreted_query,
-            "method": "Hibrida",
-            "hits": hybrid_metrics["hits"],
-            "valid_relevant_count": hybrid_metrics["valid_relevant_count"],
-            "unresolved_relevant_count": len(unresolved_relevant),
-            "recall_at_10": round(hybrid_metrics["recall"], 3),
-            "precision_at_10": round(hybrid_metrics["precision"], 3),
-            "filters": json.dumps(filters, ensure_ascii=False),
-            "matched": json.dumps(
-                hybrid_metrics["matched"],
-                ensure_ascii=False,
-            ),
-            "unresolved_relevant": json.dumps(
-                unresolved_relevant,
-                ensure_ascii=False,
-            ),
-        })
+        for config in WEIGHT_CONFIGS:
+            natural_response = call_natural_api(
+                prompt,
+                similarity_weight=config["similarity_weight"],
+                popularity_weight=config["popularity_weight"],
+                rating_weight=config["rating_weight"],
+            )
+
+            hybrid_results = natural_response.get("results", [])
+            hybrid_metrics = metrics(hybrid_results, resolved_relevant)
+
+            rows.append({
+                "query": prompt,
+                "interpreted_query": interpreted_query,
+                "method": config["method"],
+                "similarity_weight": config["similarity_weight"],
+                "popularity_weight": config["popularity_weight"],
+                "rating_weight": config["rating_weight"],
+                "hits": hybrid_metrics["hits"],
+                "valid_relevant_count": hybrid_metrics["valid_relevant_count"],
+                "unresolved_relevant_count": len(unresolved_relevant),
+                "recall_at_10": round(hybrid_metrics["recall"], 3),
+                "precision_at_10": round(hybrid_metrics["precision"], 3),
+                "filters": json.dumps(filters, ensure_ascii=False),
+                "matched": json.dumps(
+                    hybrid_metrics["matched"],
+                    ensure_ascii=False,
+                ),
+                "unresolved_relevant": json.dumps(
+                    unresolved_relevant,
+                    ensure_ascii=False,
+                ),
+            })
 
         print("\nConsulta original:", prompt)
         print("Consulta interpretada:", interpreted_query)
@@ -763,48 +822,53 @@ def main() -> None:
         print("Recall@10 vectorial:", round(vector_metrics["recall"], 3))
         print("Precision@10 vectorial:", round(vector_metrics["precision"], 3))
 
-        print_top_results("Hibrida Top 10:", hybrid_results)
-        print("Coincidencias hibrida:", hybrid_metrics["matched"])
-        print("Recall@10 hibrida:", round(hybrid_metrics["recall"], 3))
-        print("Precision@10 hibrida:", round(hybrid_metrics["precision"], 3))
-
     df = pd.DataFrame(rows)
 
     print("\nRESULTADOS")
     print("=" * 80)
     print(df[[
-        "query",
-        "method",
+    "query",
+    "method",
+    "similarity_weight",
+    "popularity_weight",
+    "rating_weight",
+    "hits",
+    "valid_relevant_count",
+    "unresolved_relevant_count",
+    "recall_at_10",
+    "precision_at_10",
+]])
+
+    print("\nPROMEDIOS")
+    print("=" * 80)
+    summary = df.groupby("method")[
+    [
+        "similarity_weight",
+        "popularity_weight",
+        "rating_weight",
         "hits",
         "valid_relevant_count",
         "unresolved_relevant_count",
         "recall_at_10",
         "precision_at_10",
-    ]])
+    ]
+    ].mean()
 
-    print("\nPROMEDIOS")
-    print("=" * 80)
-    print(
-        df.groupby("method")[
-            [
-                "hits",
-                "valid_relevant_count",
-                "unresolved_relevant_count",
-                "recall_at_10",
-                "precision_at_10",
-            ]
-        ].mean()
-    )
+    print(summary)
 
     df.to_csv(
         "../docs/evaluation_results.csv",
         index=False,
         encoding="utf-8-sig",
     )
+    summary.to_csv(
+    "../docs/weight_sensitivity_results.csv",
+    encoding="utf-8-sig",
+    )
 
-    print("\nArchivo guardado en:")
+    print("\nArchivos guardados en:")
     print("../docs/evaluation_results.csv")
-
+    print("../docs/weight_sensitivity_results.csv")
 
 if __name__ == "__main__":
     main()

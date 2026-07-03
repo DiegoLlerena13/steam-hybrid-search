@@ -83,7 +83,10 @@ def hybrid_search(
     min_date: str = "2000-01-01",
     max_date: str = "2100-01-01",
     min_reviews: int = 0,
-    min_rating: float = 0
+    min_rating: float = 0,
+    similarity_weight: float = 0.75,
+    popularity_weight: float = 0.20,
+    rating_weight: float = 0.05
 ):
     """
     Ejecuta la búsqueda híbrida del sistema.
@@ -117,11 +120,11 @@ def hybrid_search(
         ) AS similarity,
 
         (
-            (1 - (embedding <=> CAST(:embedding AS vector))) * 0.75
+            (1 - (embedding <=> CAST(:embedding AS vector))) * :similarity_weight
             +
-            (LEAST(num_reviews_total, 100000) / 100000.0) * 0.20
+            (LEAST(num_reviews_total, 100000) / 100000.0) * :popularity_weight
             +
-            (pct_pos_total / 100.0) * 0.05
+            (pct_pos_total / 100.0) * :rating_weight
         ) AS final_score
 
     FROM games
@@ -139,18 +142,21 @@ def hybrid_search(
 
     with engine.connect() as conn:
         result = conn.execute(
-            sql,
-            {
-                "embedding": str(query_embedding),
-                "max_price": max_price,
-                "min_date": min_date,
-                "max_date": max_date,
-                "min_reviews": min_reviews,
-                "min_rating": min_rating
-            }
-        )
+        sql,
+        {
+            "embedding": str(query_embedding),
+            "max_price": max_price,
+            "min_date": min_date,
+            "max_date": max_date,
+            "min_reviews": min_reviews,
+            "min_rating": min_rating,
+            "similarity_weight": similarity_weight,
+            "popularity_weight": popularity_weight,
+            "rating_weight": rating_weight
+        }
+    )
 
-        rows = result.fetchall()
+    rows = result.fetchall()
 
     return [
         {

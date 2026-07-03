@@ -284,7 +284,12 @@ def detect_query(text: str):
 
 
 @router.get("/natural-search")
-def natural_search(prompt: str):
+def natural_search(
+    prompt: str,
+    similarity_weight: float = 0.75,
+    popularity_weight: float = 0.20,
+    rating_weight: float = 0.05
+):
     """
     Endpoint principal para consultas en lenguaje natural.
 
@@ -305,13 +310,16 @@ def natural_search(prompt: str):
     min_rating = detect_rating(prompt)
 
     results = hybrid_search(
-        query=interpreted_query,
-        max_price=max_price,
-        min_date=min_date,
-        max_date=max_date,
-        min_reviews=min_reviews,
-        min_rating=min_rating
-    )
+    query=interpreted_query,
+    max_price=max_price,
+    min_date=min_date,
+    max_date=max_date,
+    min_reviews=min_reviews,
+    min_rating=min_rating,
+    similarity_weight=similarity_weight,
+    popularity_weight=popularity_weight,
+    rating_weight=rating_weight
+)
 
     semantic_tags = interpreted_query.split()
 
@@ -337,12 +345,16 @@ def natural_search(prompt: str):
             },
             "vector_part": "La consulta interpretada se transforma en un embedding y pgvector compara ese vector contra los embeddings almacenados.",
             "sql_part": "SQL filtra videojuegos por precio, rango de fecha, cantidad de reseñas y rating positivo.",
-            "ranking_formula": "final_score = 0.75 * semantic_similarity + 0.20 * normalized_popularity + 0.05 * positive_rating",
-            "ranking_weights": {
-                "semantic_similarity": 0.75,
-                "normalized_popularity": 0.20,
-                "positive_rating": 0.05
-            }
+            "ranking_formula": (
+    f"final_score = {similarity_weight} * semantic_similarity "
+    f"+ {popularity_weight} * normalized_popularity "
+    f"+ {rating_weight} * positive_rating"
+),
+"ranking_weights": {
+    "semantic_similarity": similarity_weight,
+    "normalized_popularity": popularity_weight,
+    "positive_rating": rating_weight
+}
         },
         "results": results
     }
