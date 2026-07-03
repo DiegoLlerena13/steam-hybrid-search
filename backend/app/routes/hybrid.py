@@ -10,13 +10,6 @@ router = APIRouter()
 
 
 def clean_tags(tags_text):
-    """
-    Limpia el campo de tags almacenado en PostgreSQL.
-
-    En el dataset de Steam, los tags pueden venir como diccionario o lista
-    serializada en texto. Esta función permite mostrar solo las etiquetas
-    principales en la respuesta del sistema.
-    """
     try:
         tags_dict = ast.literal_eval(tags_text)
 
@@ -33,11 +26,6 @@ def clean_tags(tags_text):
 
 
 def clean_genres(genres_text):
-    """
-    Limpia el campo de géneros.
-
-    Esto evita devolver texto crudo o estructuras serializadas en la interfaz.
-    """
     try:
         genres_list = ast.literal_eval(genres_text)
 
@@ -51,12 +39,6 @@ def clean_genres(genres_text):
 
 
 def clean_description(text_value):
-    """
-    Limpia la descripción del videojuego para mostrarla al usuario.
-
-    Se eliminan etiquetas HTML simples, entidades comunes y espacios repetidos.
-    También se recorta el texto para que la respuesta no sea demasiado extensa.
-    """
     if not text_value:
         return ""
 
@@ -86,32 +68,21 @@ def hybrid_search(
     min_rating: float = 0,
     similarity_weight: float = 0.75,
     popularity_weight: float = 0.20,
-    rating_weight: float = 0.05
+    rating_weight: float = 0.05,
+    title_query_compact: str = ""
 ):
-    """
-    Ejecuta la búsqueda híbrida del sistema.
-
-    Esta función combina:
-    1. Búsqueda semántica mediante embeddings y pgvector.
-    2. Filtros relacionales SQL como precio, fecha, reseñas y rating.
-    3. Ranking ponderado usando similitud, popularidad y valoración positiva.
-
-    Se incluye appid en la respuesta porque la evaluación corregida debe comparar
-    resultados usando el identificador único de Steam y no solo el nombre del juego.
-    """
-
     query_embedding = model.encode(query).tolist()
 
     sql = text("""
     SELECT
         appid,
         name,
-        price,
+        COALESCE(price, 0) AS price,
         release_date,
         genres,
         tags,
-        pct_pos_total,
-        num_reviews_total,
+        COALESCE(pct_pos_total, 0) AS pct_pos_total,
+        COALESCE(num_reviews_total, 0) AS num_reviews_total,
         about_the_game,
         detailed_description,
 
@@ -122,47 +93,60 @@ def hybrid_search(
         (
             (1 - (embedding <=> CAST(:embedding AS vector))) * :similarity_weight
             +
-            (LEAST(num_reviews_total, 100000) / 100000.0) * :popularity_weight
+            (LEAST(COALESCE(num_reviews_total, 0), 100000) / 100000.0) * :popularity_weight
             +
-            (pct_pos_total / 100.0) * :rating_weight
-        ) AS final_score
+            (COALESCE(pct_pos_total, 0) / 100.0) * :rating_weight
+        ) AS final_score,
+
+        CASE
+            WHEN :title_query_compact <> ''
+            AND regexp_replace(lower(name), '[^a-z0-9]+', '', 'g') = :title_query_compact
+            THEN 2
+
+            WHEN :title_query_compact <> ''
+            AND regexp_replace(lower(name), '[^a-z0-9]+', '', 'g') LIKE '%' || :title_query_compact || '%'
+            THEN 1
+
+            ELSE 0
+        END AS title_match_score
 
     FROM games
 
-    WHERE price <= :max_price
-    AND release_date >= :min_date
-    AND release_date <= :max_date
-    AND num_reviews_total >= :min_reviews
-    AND pct_pos_total >= :min_rating
+    WHERE COALESCE(price, 0) <= :max_price
+    AND release_date >= CAST(:min_date AS date)
+    AND release_date <= CAST(:max_date AS date)
+    AND COALESCE(num_reviews_total, 0) >= :min_reviews
+    AND COALESCE(pct_pos_total, 0) >= :min_rating
 
-    ORDER BY final_score DESC
+    ORDER BY title_match_score DESC, final_score DESC
 
     LIMIT 10
     """)
 
     with engine.connect() as conn:
         result = conn.execute(
-        sql,
-        {
-            "embedding": str(query_embedding),
-            "max_price": max_price,
-            "min_date": min_date,
-            "max_date": max_date,
-            "min_reviews": min_reviews,
-            "min_rating": min_rating,
-            "similarity_weight": similarity_weight,
-            "popularity_weight": popularity_weight,
-            "rating_weight": rating_weight
-        }
-    )
+            sql,
+            {
+                "embedding": str(query_embedding),
+                "max_price": max_price,
+                "min_date": min_date,
+                "max_date": max_date,
+                "min_reviews": min_reviews,
+                "min_rating": min_rating,
+                "similarity_weight": similarity_weight,
+                "popularity_weight": popularity_weight,
+                "rating_weight": rating_weight,
+                "title_query_compact": title_query_compact
+            }
+        )
 
-    rows = result.fetchall()
+        rows = result.fetchall()
 
     return [
         {
             "appid": int(row.appid),
             "name": row.name,
-            "price": row.price,
+            "price": float(row.price),
             "release_date": str(row.release_date),
             "genres": clean_genres(row.genres),
             "tags": clean_tags(row.tags),
@@ -171,10 +155,11 @@ def hybrid_search(
                 if row.about_the_game
                 else row.detailed_description
             ),
-            "rating": row.pct_pos_total,
-            "reviews": row.num_reviews_total,
+            "rating": float(row.pct_pos_total),
+            "reviews": int(row.num_reviews_total),
             "similarity": float(row.similarity),
-            "final_score": float(row.final_score)
+            "final_score": float(row.final_score),
+            "title_match_score": int(row.title_match_score)
         }
         for row in rows
     ]

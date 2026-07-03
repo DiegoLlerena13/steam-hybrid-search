@@ -4,22 +4,21 @@ import re
 import unicodedata
 from typing import Any, Dict, List, Set
 
-from click import prompt
 import pandas as pd
-from pygments import filters
 import requests
-from rich import prompt
 from sqlalchemy import text
 
 from app.database import engine
-
+from app.routes.natural import (
+    detect_price,
+    detect_year_range,
+    detect_reviews,
+    detect_rating,
+)
 
 BASE_URL = "http://127.0.0.1:8000"
 K = 10
 
-# Permite ejecutar solo algunas consultas para depuración rápida.
-# Ejemplo:
-#   EVAL_LIMIT=5 python evaluate_system.py
 EVAL_LIMIT = int(os.getenv("EVAL_LIMIT", "0"))
 
 WEIGHT_CONFIGS = [
@@ -256,9 +255,6 @@ TESTS = [
             "No Man's Sky",
         ],
     },
-
-    # Consultas un poco más generales para que no parezca un benchmark perfecto
-
     {
         "prompt": "juegos cooperativos divertidos para jugar con amigos",
         "relevant": [
@@ -309,9 +305,6 @@ TESTS = [
             "Geometry Dash",
         ],
     },
-
-    # Consultas más difíciles, pero todavía cercanas al alcance del prototipo
-
     {
         "prompt": "juegos de estrategia por turnos de civilizaciones e imperios populares",
         "relevant": [
@@ -364,18 +357,8 @@ TESTS = [
     },
 ]
 
+
 def normalize_title(text_value: str) -> str:
-    """
-    Normaliza títulos únicamente para resolver el ground truth contra la BD.
-
-    La evaluación final NO se hace por texto, sino por appid.
-    Esto evita falsos positivos como:
-    - Raft = Crafting Block World
-    - Cities Skylines = SKY
-    - Civilization VI = Civilization V
-
-    También se conservan números y números romanos porque diferencian juegos.
-    """
     text_value = str(text_value).lower()
 
     replacements = {
@@ -410,21 +393,6 @@ def normalize_title(text_value: str) -> str:
 
 
 def edition_safe_match(expected: str, candidate: str) -> bool:
-    """
-    Permite diferencias menores de edición sin confundir juegos distintos.
-
-    Aceptable:
-    - Sekiro Shadows Die Twice
-    - Sekiro Shadows Die Twice GOTY Edition
-
-    No aceptable:
-    - Dark Souls Remastered
-    - Dark Souls III
-
-    No aceptable:
-    - Cities Skylines
-    - Cities Skylines II
-    """
     expected_tokens = set(expected.split())
     candidate_tokens = set(candidate.split())
 
@@ -451,13 +419,6 @@ def edition_safe_match(expected: str, candidate: str) -> bool:
 
 
 def load_games_catalog() -> pd.DataFrame:
-    """
-    Carga el catálogo real desde PostgreSQL.
-
-    Esto sirve para validar que los juegos del ground truth existan dentro de
-    la misma base usada por el sistema. Si un juego no está en la BD, no debe
-    castigar injustamente el Recall.
-    """
     sql = text("""
         SELECT
             appid,
@@ -474,11 +435,6 @@ def load_games_catalog() -> pd.DataFrame:
 
 
 def build_catalog_index(catalog: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]]:
-    """
-    Construye un índice por nombre normalizado para resolver ground truth rápido.
-
-    Esto evita recorrer toda la base muchas veces y reduce el tiempo de evaluación.
-    """
     index: Dict[str, List[Dict[str, Any]]] = {}
 
     for _, row in catalog.iterrows():
@@ -496,14 +452,8 @@ def build_catalog_index(catalog: pd.DataFrame) -> Dict[str, List[Dict[str, Any]]
 def resolve_relevant_games(
     relevant_names: List[str],
     catalog: pd.DataFrame,
-    catalog_index: Dict[str, List[Dict[str, Any]]]
+    catalog_index: Dict[str, List[Dict[str, Any]]],
 ) -> Dict[str, Any]:
-    """
-    Convierte nombres del ground truth a appid.
-
-    El appid es el identificador único de Steam, por eso es el criterio más
-    sólido para contar aciertos en Recall@10.
-    """
     resolved = []
     unresolved = []
 
@@ -522,7 +472,7 @@ def resolve_relevant_games(
                 for _, row in catalog.iterrows()
                 if edition_safe_match(
                     normalized_relevant,
-                    row["normalized_name"]
+                    row["normalized_name"],
                 )
             ]
 
@@ -549,12 +499,6 @@ def resolve_relevant_games(
 
 
 def call_search_api(query: str) -> List[Dict[str, Any]]:
-    """
-    Ejecuta /search como baseline vectorial puro.
-
-    Se usa la consulta interpretada por el NLU para que la comparación sea justa:
-    ambos métodos parten del mismo significado semántico.
-    """
     response = requests.get(
         f"{BASE_URL}/search",
         params={"query": query},
@@ -582,25 +526,16 @@ def call_natural_api(
     prompt: str,
     similarity_weight: float = 0.75,
     popularity_weight: float = 0.20,
-    rating_weight: float = 0.05
+    rating_weight: float = 0.05,
 ) -> Dict[str, Any]:
-    """
-    Ejecuta /natural-search, que representa el sistema final.
-
-    Este endpoint:
-    - recibe una consulta en español,
-    - interpreta la consulta,
-    - extrae filtros,
-    - llama internamente a la búsqueda híbrida.
-    """
     response = requests.get(
         f"{BASE_URL}/natural-search",
         params={
-    "prompt": prompt,
-    "similarity_weight": similarity_weight,
-    "popularity_weight": popularity_weight,
-    "rating_weight": rating_weight,
-},
+            "prompt": prompt,
+            "similarity_weight": similarity_weight,
+            "popularity_weight": popularity_weight,
+            "rating_weight": rating_weight,
+        },
         timeout=60,
     )
 
@@ -625,18 +560,63 @@ def call_natural_api(
     return data
 
 
+def relational_baseline_search(prompt: str, limit: int = K) -> List[Dict[str, Any]]:
+    max_price = detect_price(prompt)
+    min_date, max_date = detect_year_range(prompt)
+    min_reviews = detect_reviews(prompt)
+    min_rating = detect_rating(prompt)
+
+    sql = text("""
+        SELECT
+            appid,
+            name,
+            price,
+            release_date,
+            pct_pos_total,
+            num_reviews_total,
+
+            (
+                (LEAST(COALESCE(num_reviews_total, 0), 100000) / 100000.0) * 0.70
+                +
+                (COALESCE(pct_pos_total, 0) / 100.0) * 0.30
+            ) AS relational_score
+
+        FROM games
+
+        WHERE COALESCE(price, 0) <= :max_price
+        AND release_date IS NOT NULL
+        AND release_date >= CAST(:min_date AS date)
+        AND release_date <= CAST(:max_date AS date)
+        AND COALESCE(num_reviews_total, 0) >= :min_reviews
+        AND COALESCE(pct_pos_total, 0) >= :min_rating
+
+        ORDER BY relational_score DESC
+
+        LIMIT :limit
+    """)
+
+    with engine.connect() as conn:
+        result = pd.read_sql(
+            sql,
+            conn,
+            params={
+                "max_price": max_price,
+                "min_date": min_date,
+                "max_date": max_date,
+                "min_reviews": min_reviews,
+                "min_rating": min_rating,
+                "limit": limit,
+            },
+        )
+
+    return result.to_dict("records")
+
+
 def count_hits_by_appid(
     results: List[Dict[str, Any]],
     resolved_relevant: List[Dict[str, Any]],
-    k: int = K
+    k: int = K,
 ) -> Dict[str, Any]:
-    """
-    Cuenta aciertos usando appid.
-
-    Esta es la corrección metodológica más importante:
-    ya no se considera acierto por parecido textual, sino por coincidencia
-    con el identificador único del videojuego.
-    """
     top_k = results[:k]
 
     top_results_by_appid = {
@@ -674,17 +654,8 @@ def count_hits_by_appid(
 def metrics(
     results: List[Dict[str, Any]],
     resolved_relevant: List[Dict[str, Any]],
-    k: int = K
+    k: int = K,
 ) -> Dict[str, Any]:
-    """
-    Calcula Recall@K y Precision@K.
-
-    Recall@K:
-    relevantes recuperados en Top-K / relevantes válidos en la BD
-
-    Precision@K:
-    relevantes recuperados en Top-K / K
-    """
     hit_info = count_hits_by_appid(
         results,
         resolved_relevant,
@@ -777,6 +748,32 @@ def main() -> None:
             ),
         })
 
+        relational_results = relational_baseline_search(prompt, limit=K)
+        relational_metrics = metrics(relational_results, resolved_relevant)
+
+        rows.append({
+            "query": prompt,
+            "interpreted_query": interpreted_query,
+            "method": "Baseline relacional",
+            "similarity_weight": 0.00,
+            "popularity_weight": 0.70,
+            "rating_weight": 0.30,
+            "hits": relational_metrics["hits"],
+            "valid_relevant_count": relational_metrics["valid_relevant_count"],
+            "unresolved_relevant_count": len(unresolved_relevant),
+            "recall_at_10": round(relational_metrics["recall"], 3),
+            "precision_at_10": round(relational_metrics["precision"], 3),
+            "filters": json.dumps(filters, ensure_ascii=False),
+            "matched": json.dumps(
+                relational_metrics["matched"],
+                ensure_ascii=False,
+            ),
+            "unresolved_relevant": json.dumps(
+                unresolved_relevant,
+                ensure_ascii=False,
+            ),
+        })
+
         for config in WEIGHT_CONFIGS:
             natural_response = call_natural_api(
                 prompt,
@@ -822,27 +819,19 @@ def main() -> None:
         print("Recall@10 vectorial:", round(vector_metrics["recall"], 3))
         print("Precision@10 vectorial:", round(vector_metrics["precision"], 3))
 
+        print_top_results("Baseline relacional Top 10:", relational_results)
+        print("Coincidencias baseline relacional:", relational_metrics["matched"])
+        print("Recall@10 baseline relacional:", round(relational_metrics["recall"], 3))
+        print("Precision@10 baseline relacional:", round(relational_metrics["precision"], 3))
+
     df = pd.DataFrame(rows)
 
     print("\nRESULTADOS")
     print("=" * 80)
-    print(df[[
-    "query",
-    "method",
-    "similarity_weight",
-    "popularity_weight",
-    "rating_weight",
-    "hits",
-    "valid_relevant_count",
-    "unresolved_relevant_count",
-    "recall_at_10",
-    "precision_at_10",
-]])
 
-    print("\nPROMEDIOS")
-    print("=" * 80)
-    summary = df.groupby("method")[
-    [
+    print(df[[
+        "query",
+        "method",
         "similarity_weight",
         "popularity_weight",
         "rating_weight",
@@ -851,7 +840,22 @@ def main() -> None:
         "unresolved_relevant_count",
         "recall_at_10",
         "precision_at_10",
-    ]
+    ]])
+
+    print("\nPROMEDIOS")
+    print("=" * 80)
+
+    summary = df.groupby("method")[
+        [
+            "similarity_weight",
+            "popularity_weight",
+            "rating_weight",
+            "hits",
+            "valid_relevant_count",
+            "unresolved_relevant_count",
+            "recall_at_10",
+            "precision_at_10",
+        ]
     ].mean()
 
     print(summary)
@@ -861,14 +865,16 @@ def main() -> None:
         index=False,
         encoding="utf-8-sig",
     )
+
     summary.to_csv(
-    "../docs/weight_sensitivity_results.csv",
-    encoding="utf-8-sig",
+        "../docs/weight_sensitivity_results.csv",
+        encoding="utf-8-sig",
     )
 
     print("\nArchivos guardados en:")
     print("../docs/evaluation_results.csv")
     print("../docs/weight_sensitivity_results.csv")
+
 
 if __name__ == "__main__":
     main()
