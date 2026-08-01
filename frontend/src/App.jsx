@@ -64,38 +64,40 @@ function App() {
           {transparency && (
             <>
               <p>
-                <strong>🏷️ Conceptos semánticos extraídos:</strong>{" "}
+                <strong>Conceptos semánticos extraídos:</strong>{" "}
                 {transparency.semantic_tags.join(", ")}
               </p>
 
               <p>
-                <strong>🧠 Parte vectorial:</strong>{" "}
+                <strong>Parte vectorial:</strong>{" "}
                 {transparency.vector_part}
               </p>
 
               <p>
-                <strong>🗄️ Parte SQL:</strong>{" "}
+                <strong>Parte SQL:</strong>{" "}
                 {transparency.sql_part}
               </p>
 
               <p>
-                <strong>📊 Fórmula de ranking:</strong>{" "}
+                <strong>Fórmula de ranking:</strong>{" "}
                 {transparency.ranking_formula}
               </p>
             </>
           )}
 
           <div className="filters">
-            <span>💰 Precio máximo: ${filters.max_price_usd}</span>
-            <span>📅 Fecha mínima: {filters.min_date}</span>
-            <span>📝 Reviews mínimas: {filters.min_reviews}</span>
-            <span>⭐ Rating mínimo: {filters.min_rating}%</span>
+            <span>Precio máximo: ${filters.max_price_usd}</span>
+            <span>Fecha mínima: {filters.min_date}</span>
+            <span>Fecha máxima: {filters.max_date}</span>
+            <span>Reviews mínimas: {filters.min_reviews}</span>
+            <span>Rating mínimo: {filters.min_rating}%</span>
           </div>
 
           {transparency && (
             <div className="filters">
               <span>{transparency.recognized_filters.price}</span>
-              <span>{transparency.recognized_filters.release_date}</span>
+              <span>{transparency.recognized_filters.release_date_min}</span>
+              <span>{transparency.recognized_filters.release_date_max}</span>
               <span>{transparency.recognized_filters.reviews}</span>
               <span>{transparency.recognized_filters.rating}</span>
             </div>
@@ -126,29 +128,29 @@ function App() {
 
       <div className="results">
         {results.map((game, index) => (
-          <div key={index} className="card">
+          <div key={game.appid || index} className="card">
             <h3>
               {index + 1}. {game.name}
             </h3>
 
-            <p>💰 Precio: ${game.price}</p>
-            <p>📅 Fecha de lanzamiento: {game.release_date}</p>
-            <p>⭐ Rating positivo: {game.rating}%</p>
-            <p>📝 Reviews totales: {game.reviews}</p>
+            <p>Precio: ${game.price}</p>
+            <p>Fecha de lanzamiento: {game.release_date}</p>
+            <p>Rating positivo: {game.rating}%</p>
+            <p>Reviews totales: {game.reviews}</p>
 
             <p>
-              🎯 Similitud semántica:{" "}
+              Similitud semántica:{" "}
               {Number(game.similarity).toFixed(3)}
             </p>
 
             <p>
-              🏆 Score final híbrido:{" "}
+              Score final híbrido:{" "}
               {Number(game.final_score).toFixed(3)}
             </p>
 
             {game.genres && (
               <p>
-                <strong>🎮 Géneros:</strong>{" "}
+                <strong>Géneros:</strong>{" "}
                 {Array.isArray(game.genres)
                   ? game.genres.join(", ")
                   : game.genres}
@@ -157,7 +159,7 @@ function App() {
 
             {game.tags && (
               <p>
-                <strong>🏷️ Tags:</strong>{" "}
+                <strong>Tags:</strong>{" "}
                 {Array.isArray(game.tags)
                   ? game.tags.join(", ")
                   : game.tags}
@@ -166,7 +168,7 @@ function App() {
 
             {game.description && (
               <div className="description">
-                <strong>📌 Presentación:</strong>
+                <strong>Presentación:</strong>
                 <p>{game.description}</p>
               </div>
             )}
